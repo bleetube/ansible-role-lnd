@@ -1,0 +1,12 @@
+---
+#lnd_version: 0.17.0-beta.rc1
+lnd_version: latest # 0.16.4-beta
+lnd_binary_install_dir: /usr/local/bin
+# https://github.com/lightningnetwork/lnd/releases/download/v0.17.0-beta.rc1/lnd-linux-amd64-v0.17.0-beta.rc1.tar.gz
+lnd_binary_url: "https://github.com/lightningnetwork/lnd/releases/download/v{{ lnd_version }}/lnd-linux-{{ go_arch }}-v{{ lnd_version }}.tar.gz"
+# https://github.com/lightningnetwork/lnd/releases/download/v0.17.0-beta.rc1/manifest-v0.17.0-beta.rc1.txt
+lnd_checksums_url: "https://github.com/lightningnetwork/lnd/releases/download/v{{ lnd_version }}/manifest-v{{ lnd_version }}.txt"
+lnd_system_user: lnd
+lnd_system_group: lnd
+
+lnd_path: /var/lib/lnd

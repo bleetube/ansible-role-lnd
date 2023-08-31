@@ -1,0 +1,12 @@
+[Unit]
+Description=Lightning Network Daemon
+After=network.target
+#Wants=lnd-channel-backups.service
+
+[Service]
+User={{ lnd_system_user }}
+Group={{ lnd_system_group }}
+ExecStart=/usr/local/bin/lnd --configfile={{ lnd_path }}/lnd.conf
+
+[Install]
+WantedBy=multi-user.target

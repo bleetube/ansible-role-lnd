@@ -1,0 +1,38 @@
+---
+- name: Get nologin path for lnd user
+  ansible.builtin.find:
+    paths:
+      - /bin
+      - /sbin
+      - /usr/bin
+      - /usr/sbin
+    patterns: nologin
+  register: nologin_bin
+
+- name: Create the lnd group
+  ansible.builtin.group:
+    name: "{{ lnd_system_group }}"
+    state: present
+    system: true
+  when: lnd_system_group != "root"
+  become: true
+
+- name: Create the lnd system user
+  ansible.builtin.user:
+    name: "{{ lnd_system_user }}"
+    groups: "{{ lnd_system_group }}"
+    shell: "{{ nologin_bin.files[0].path }}"
+    system: true
+    create_home: false
+    home: "{{ lnd_path }}"
+  when: lnd_system_user != "root"
+  become: true
+
+- name: Ensure lnd_path exists.
+  ansible.builtin.file:
+    path: "{{ lnd_path }}"
+    owner: "{{ lnd_system_user }}"
+    group: "{{ lnd_system_group }}"
+    state: directory
+#   mode: '0755' # permit read access to rpc.cert
+  become: true

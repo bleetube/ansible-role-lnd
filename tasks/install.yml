@@ -1,0 +1,33 @@
+---
+- name: Download lnd binaries to local folder
+  ansible.builtin.get_url:
+    url: "{{ lnd_binary_url }}"
+    dest: "/tmp/lnd-linux-{{ go_arch }}-v{{ lnd_version }}.tar.gz"
+    checksum: "sha256:{{ __lnd_checksum }}"
+    mode: '0644'
+# register: _download_binary
+# until: _download_binary is succeeded
+# retries: 2
+# delay: 2
+  delegate_to: localhost
+  check_mode: false
+
+- name: Unpack lnd binaries
+  ansible.builtin.unarchive:
+    src: "/tmp/lnd-linux-{{ go_arch }}-v{{ lnd_version }}.tar.gz"
+    dest: /tmp
+    creates: "/tmp/lnd-linux-{{ go_arch }}-v{{ lnd_version }}/lnd"
+  delegate_to: localhost
+  check_mode: false
+
+- name: Propagate lnd binaries
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/lnd-linux-{{ go_arch }}-v{{ lnd_version }}/{{ item }}"
+    dest: "{{ lnd_binary_install_dir }}/{{ item }}"
+    mode: 0755
+  notify: restart lnd
+  when: not ansible_check_mode
+  loop:
+    - lnd
+    - lncli

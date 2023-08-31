@@ -1,0 +1,50 @@
+---
+- name: Assert usage of systemd as an init system
+  ansible.builtin.assert:
+    that: ansible_service_mgr == 'systemd'
+    msg: "This role only works with systemd"
+
+- name: Check if lnd is installed
+  ansible.builtin.stat:
+    path: "{{ lnd_binary_install_dir }}/lnd"
+  register: __lnd_is_installed
+  check_mode: false
+  tags:
+    - lnd_install
+
+- name: Gather currently installed lnd version (if any)
+  ansible.builtin.command: "{{ lnd_binary_install_dir }}/lnd --version"
+  changed_when: false
+  register: __lnd_current_version_output
+  check_mode: false
+  when: __lnd_is_installed.stat.exists
+  tags:
+    - lnd_install
+
+- name: Discover latest version
+  ansible.builtin.set_fact:
+    lnd_version: "{{ (lookup('url', 'https://api.github.com/repos/lightningnetwork/lnd/releases/latest', headers=_github_api_headers,
+                            split_lines=False) | from_json).get('tag_name') | replace('v', '') }}"
+  run_once: true
+  until: lnd_version is version('0.0.0', '>=')
+  retries: 2
+  when:
+    - lnd_version == "latest"
+
+- name: Get lnd binary checksum
+  block:
+    - name: Get checksum list from github
+      ansible.builtin.set_fact:
+        __lnd_checksums: "{{ lookup('url', lnd_checksums_url, headers=_github_api_headers, wantlist=True) | list }}"
+      run_once: true
+      until: __lnd_checksums is search('lnd-linux-' + go_arch + '-v' + lnd_version + '.tar.gz')
+#     retries: 2
+
+    - name: "Get checksum for {{ go_arch }}"
+      ansible.builtin.set_fact:
+        __lnd_checksum: "{{ item.split(' ')[0] }}"
+      with_items: "{{ __lnd_checksums }}"
+      when:
+#       - "(lnd-linux-{{ go_arch }}-v{{ lnd_version }}.tar.gz) in item"
+        - "('lnd-linux-' + go_arch + '-v' + lnd_version + '.tar.gz') in item"
+#       - "('linux-' + go_arch + '.tar.gz') in item"

@@ -1,0 +1,12 @@
+---
+- name: Install the systemd service file
+  ansible.builtin.template:
+    src: lnd.service
+    dest: /etc/systemd/system/
+# notify: restart lnd
+
+- name: Install the database backup script
+  ansible.builtin.template:
+    src: copy-channel-backup-on-change.sh
+    dest: "{{ lnd_binary_install_dir }}/copy-channel-backup-on-change.sh"
+# notify: restart lnd

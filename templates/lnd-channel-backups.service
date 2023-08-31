@@ -1,0 +1,13 @@
+[Unit]
+Description=Lightning Network Daemon channel backups
+
+[Service]
+User=lightning
+Group=lightning
+ExecStart=/home/lightning/bin/copy-channel-backup-on-change.sh
+Restart=always
+RestartSec=1
+SyslogIdentifier=backup-channels
+
+[Install]
+WantedBy=multi-user.target

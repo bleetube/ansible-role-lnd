@@ -1,0 +1,10 @@
+---
+- name: Restart lnd
+  listen: restart lnd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: lnd.service
+    state: restarted
+  when:
+    - not ansible_check_mode

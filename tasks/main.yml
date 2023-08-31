@@ -1,0 +1,26 @@
+---
+#- name: Assert all secrets have been configured.
+#  ansible.builtin.assert:
+#    that:
+#      - lnd_rpcuser is defined
+#      - lnd_rpcuser != ''
+#      - lnd_rpcpass is defined
+#      - lnd_rpcpass != ''
+#    fail_msg: "FAILED: Secrets have not been configured."
+#  no_log: true
+
+- name: Run the preflight task.
+  include_tasks: preflight.yml
+
+- name: Set up the system user and group.
+  import_tasks: setup-user.yml
+
+- name: Run the installation task.
+  include_tasks: install.yml
+
+- name: Configure lnd
+  include_tasks:
+    file: setup-lnd.yml
+    apply:
+      become: true
+      tags: setup-lnd
